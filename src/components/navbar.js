@@ -51,7 +51,7 @@ const Navbar = () => {
           onMouseLeave={() => setIsHovered(false)}
           onClick={isHovered ? logout : undefined}
         >
-          {isHovered ? (
+          {isHovered || address === null || !address ? (
             <div className="flex items-center text-red-500 h-8">
               <LogOut size={16} className="mr-3" />
               <span className="text-sm font-medium">Logout</span>
