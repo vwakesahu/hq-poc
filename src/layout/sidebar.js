@@ -23,7 +23,9 @@ const MenuItem = ({ href, icon: Icon, children }) => {
     <Link href={href} passHref>
       <div
         className={`flex items-center text-sm rounded-lg px-4 py-2 cursor-pointer ${
-          isActive ? "bg-[#F1F1EF] font-semibold text-black" : "hover:bg-[#F1F1EF]"
+          isActive
+            ? "bg-[#F1F1EF] font-semibold text-black"
+            : "hover:bg-[#F1F1EF]"
         }`}
       >
         <Icon size={18} className="mr-2" />
@@ -57,17 +59,17 @@ export default function Sidebar() {
         </div>
       </div>
       <div className="flex-grow overflow-y-auto">
-        <div className="my-6 px-2">
+        {/* <div className="my-6 px-2">
           <MenuItem href="/dashboard" icon={Home}>
             Dashboard
           </MenuItem>
-        </div>
-
-        <MenuSection title="PAYMENTS">
-          <MenuItem href="/transfer" icon={ArrowUpRight}>
-            Transfer
-          </MenuItem>
-          <MenuItem href="/invoices" icon={FileText}>
+        </div> */}
+        <div className="my-6 px-2">
+          <MenuSection title="PAYMENTS">
+            <MenuItem href="/transfer" icon={ArrowUpRight}>
+              Transfer
+            </MenuItem>
+            {/* <MenuItem href="/invoices" icon={FileText}>
             Invoices
           </MenuItem>
           <MenuItem href="/swap" icon={RefreshCcw}>
@@ -75,10 +77,11 @@ export default function Sidebar() {
           </MenuItem>
           <MenuItem href="/payment-links" icon={LinkIcon}>
             Payment Links
-          </MenuItem>
-        </MenuSection>
+          </MenuItem> */}
+          </MenuSection>
+        </div>
 
-        <MenuSection title="REPORTING">
+        {/* <MenuSection title="REPORTING">
           <MenuItem href="/transactions" icon={BarChart2}>
             Transactions
           </MenuItem>
@@ -91,7 +94,7 @@ export default function Sidebar() {
           <MenuItem href="/nfts" icon={Diamond}>
             NFTs
           </MenuItem>
-        </MenuSection>
+        </MenuSection> */}
       </div>
     </div>
   );
