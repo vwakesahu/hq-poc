@@ -56,11 +56,11 @@ const CustomLayout = ({ children, linkset = "default" }) => {
   return (
     <div className="h-screen flex flex-col">
       <Navbar />
-      <div className="flex h-full">
+      <div className="flex h-full overflow-hidden">
         <Sidebar linkSet={linkset} />
         <main className="flex-grow">
           <div className="h-full pb-6 pr-5">
-            <div className="bg-white border  h-full rounded-lg shadow-sm overflow-hidden">
+            <div className="bg-white border overflow-auto h-full rounded-lg shadow-sm">
               {!ready ? (
                 <div className="h-full w-full flex items-center justify-center">
                   <Loader />

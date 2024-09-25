@@ -1,7 +1,7 @@
 const BasicPageLayout = ({ children, title }) => {
   return (
     <>
-      <div className="p-8 text-2xl font-semibold">{title}</div>
+      <div className="p-8 text-2xl font-semibold max-w-4xl mx-auto">{title}</div>
       {children}
     </>
   );
