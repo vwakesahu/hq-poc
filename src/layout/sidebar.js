@@ -69,6 +69,9 @@ export default function Sidebar() {
             <MenuItem href="/transfer" icon={ArrowUpRight}>
               Transfer
             </MenuItem>
+            <MenuItem href="/transactions" icon={BarChart2}>
+              Transactions
+            </MenuItem>
             {/* <MenuItem href="/invoices" icon={FileText}>
             Invoices
           </MenuItem>
