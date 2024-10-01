@@ -38,6 +38,24 @@ export const PaymentHistoryTable = () => {
       sentFrom: "Deep",
       status: "Completed",
     },
+    {
+      id: 1,
+      date: "30 Sep 2024",
+      recipient: "Testing",
+      recipientAddress: "0x1...514",
+      amount: "0.001 MATIC",
+      sentFrom: "Deep",
+      status: "Pending",
+    },
+    {
+      id: 1,
+      date: "30 Sep 2024",
+      recipient: "Testing",
+      recipientAddress: "0x1...514",
+      amount: "0.001 MATIC",
+      sentFrom: "Deep",
+      status: "Completed",
+    },
   ];
 
   const filteredPayments = payments.filter(
@@ -56,7 +74,7 @@ export const PaymentHistoryTable = () => {
   return (
     <Card className="w-full max-w-4xl mx-auto">
       <CardContent className="p-6">
-        <h2 className="text-2xl font-bold mb-4">Payment History</h2>
+        <h2 className="text-lg font-semibold mb-4">Payment History</h2>
         <div className="flex justify-between items-center mb-4">
           <div className="relative flex-grow mr-4">
             <Search

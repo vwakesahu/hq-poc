@@ -3,6 +3,7 @@ import "./globals.css";
 import PrivyWrapper from "@/privy/privyProvider";
 import { Toaster } from "sonner";
 import CustomLayout from "@/layout/custom-layout";
+import { FHEWrapper } from "@/fhevm/fheWrapper";
 
 const poppins = Poppins({
   subsets: ["latin"],
@@ -19,8 +20,10 @@ export default function RootLayout({ children }) {
     <html lang="en">
       <body className={poppins.className}>
         <PrivyWrapper>
-          <CustomLayout>{children}</CustomLayout>
-          <Toaster />
+          <FHEWrapper>
+            <CustomLayout>{children}</CustomLayout>
+            <Toaster />
+          </FHEWrapper>
         </PrivyWrapper>
       </body>
     </html>

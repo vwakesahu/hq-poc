@@ -6,9 +6,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import BasicPageLayout from "@/layout/basic-page-layout";
 import { useWalletContext } from "@/privy/walletContext";
+import { useFhevm } from "@/fhevm/fhevm-context";
 
 const TransferForm = () => {
   const { signer, w0, address, isLoading, error } = useWalletContext();
+  const { instance, loading } = useFhevm();
   const [payments, setPayments] = useState([{}]);
 
   const addPayment = () => {
@@ -27,7 +29,7 @@ const TransferForm = () => {
   };
 
   return (
-    <div className="max-w-4xl mx-auto px-4 pb-8">
+    <div className="max-w-4xl mx-auto  pb-8">
       <Card className="mb-8">
         <CardContent className="p-6">
           <h2 className="text-lg font-semibold mb-4">Selected Wallet</h2>
@@ -38,7 +40,7 @@ const TransferForm = () => {
         </CardContent>
       </Card>
 
-      <Card className='overflow-hidden'>
+      <Card className="overflow-hidden">
         <CardContent className="p-6 overflow-hidden">
           <h2 className="text-lg font-semibold mb-4">
             Payments ({payments.length})
