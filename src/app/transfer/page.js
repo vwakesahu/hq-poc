@@ -7,11 +7,16 @@ import { Input } from "@/components/ui/input";
 import BasicPageLayout from "@/layout/basic-page-layout";
 import { useWalletContext } from "@/privy/walletContext";
 import { useFhevm } from "@/fhevm/fhevm-context";
+import {
+  ENCRYPTEDERC20CONTRACTABI,
+  ENCRYPTEDERC20CONTRACTADDRESS,
+} from "@/utils/contracts";
+import { Contract } from "ethers";
 
 const TransferForm = () => {
   const { signer, w0, address, isLoading, error } = useWalletContext();
-  const { instance, loading } = useFhevm();
   const [payments, setPayments] = useState([{}]);
+  const { instance: fhevmInstance } = useFhevm();
 
   const addPayment = () => {
     setPayments([...payments, {}]);
@@ -26,6 +31,64 @@ const TransferForm = () => {
       return `${address.slice(0, 4)}...${address.slice(-4)}`;
     }
     return address;
+  };
+
+  const getBalance = async () => {
+    // setIsLoading(true);
+    // setError(null);
+    try {
+      const { publicKey, privateKey } = fhevmInstance.generateKeypair();
+      const eip712 = fhevmInstance.createEIP712(
+        publicKey,
+        ENCRYPTEDERC20CONTRACTADDRESS
+      );
+
+      const signature = await signer._signTypedData(
+        eip712.domain,
+        { Reencrypt: eip712.types.Reencrypt },
+        eip712.message
+      );
+      const encryptedErc20Contract = new Contract(
+        ENCRYPTEDERC20CONTRACTADDRESS,
+        ENCRYPTEDERC20CONTRACTABI,
+        signer
+      );
+      const balanceHandle = await encryptedErc20Contract.balanceOf(
+        "0xe0Af5dC2E3c92632140776C5a780212592588042"
+      );
+      console.log("balanceHandle", balanceHandle);
+      if (balanceHandle.toString() === "0") {
+        console.log("You have no balance to fetch");
+        // toast.error("You have no balance to fetch.");
+        // setBalance(null);
+      } else {
+        const balanceResult = await fhevmInstance.reencrypt(
+          balanceHandle,
+          privateKey,
+          publicKey,
+          signature.replace("0x", ""),
+          ENCRYPTEDERC20CONTRACTADDRESS,
+          address
+        );
+        console.log(balanceResult);
+        // const vestingContract = new Contract(
+        //   VESTING_CONTRACT_ADDRESS,
+        //   VESTINGABI,
+        //   signer
+        // );
+        // const plans = await vestingContract.plans(1);
+        // console.log(plans);
+        // setBalance(balanceResult.toString());
+      }
+    } catch (err) {
+      console.error(err);
+      // toast.error("Failed to fetch balance. Please try again.");
+      // setError("Failed to fetch balance. Please try again.");
+      // setIsErrorModalOpen(true);
+    } finally {
+      console.log("completed");
+      // setIsLoading(false);
+    }
   };
 
   return (
@@ -100,6 +163,12 @@ const TransferForm = () => {
       </Card>
 
       <div className="mt-8 flex justify-end">
+        <Button
+          className="bg-gray-900 hover:bg-gray-700 text-white px-6"
+          onClick={getBalance}
+        >
+          Get Balance
+        </Button>
         <Button className="bg-gray-900 hover:bg-gray-700 text-white px-6">
           Review Payments
         </Button>

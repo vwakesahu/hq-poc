@@ -1,28 +1,26 @@
-import { toast } from "sonner";
-
 export const chainsName = { inco: "Inco" };
 
 export const incoNetwork = {
-  id: 9090,
-  network: "Inco Gentry Testnet",
-  name: "INCO",
+  id: 9000,
+  network: "Evmos",
+  name: "Evmos Testnet",
   nativeCurrency: {
-    name: "INCO",
-    symbol: "INCO",
+    name: "tEVMOS",
+    symbol: "tEVMOS",
     decimals: 18,
   },
   rpcUrls: {
     default: {
-      http: ["https://testnet.inco.org/"],
+      http: ["https://validator.rivest.inco.org"],
     },
     public: {
-      http: ["https://testnet.inco.org/"],
+      http: ["https://validator.rivest.inco.org"],
     },
   },
   blockExplorers: {
     default: {
       name: "Explorer",
-      url: "https://explorer.testnet.inco.org",
+      url: "https://explorer.rivest.inco.org",
     },
   },
 };

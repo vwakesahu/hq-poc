@@ -6,9 +6,9 @@ export const createFhevmInstance = async () => {
   if (!fhevmInstance) {
     await initFhevm();
     fhevmInstance = await createInstance({
-      chainId: 8009,
-      networkUrl: "https://devnet.zama.ai/",
-      gatewayUrl: "https://gateway.zama.ai/",
+      chainId: 9000,
+      networkUrl: "https://validator.rivest.inco.org/",
+      gatewayUrl: "https://gateway.rivest.inco.org/",
     });
   }
   return fhevmInstance;
@@ -20,3 +20,6 @@ export const getFhevmInstance = async () => {
   }
   return fhevmInstance;
 };
+
+export const toHexString = (bytes) =>
+  bytes.reduce((str, byte) => str + byte.toString(16).padStart(2, "0"), "");
