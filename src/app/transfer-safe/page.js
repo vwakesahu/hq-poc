@@ -11,8 +11,6 @@ import { Wallet as WalletIcon, CreditCard } from "lucide-react";
 import {
   ENCRYPTEDERC20CONTRACTABI,
   ENCRYPTEDERC20CONTRACTADDRESS,
-  ERC20CONTRACTABI,
-  ERC20CONTRACTADDRESS,
 } from "@/utils/contracts";
 import { Contract } from "ethers";
 import { toHexString } from "@/fhevm/fhe-functions";
@@ -28,8 +26,6 @@ const TransferForm = () => {
   const { instance: fhevmInstance } = useFhevm();
   const [balance, setBalance] = useState(null);
   const [balanceLoading, setBalanceLoading] = useState(false);
-  const [usdcBalanceLoading, setUsdcBalanceLoading] = useState(false);
-  const [usdcBalance, setUsdcBalance] = useState(null);
 
   const addPayment = () => {
     setPayments([...payments, { recipient: "", amount: "" }]);
@@ -156,26 +152,18 @@ const TransferForm = () => {
     }
   };
 
-  const getUSDCBalance = async () => {
-    try {
-      setUsdcBalanceLoading(true);
-      const erc20Contract = new Contract(
-        ERC20CONTRACTADDRESS,
-        ERC20CONTRACTABI,
-        signer
-      );
-      const balance = await erc20Contract.balanceOf(address);
-      console.log(balance.toString());
-      setUsdcBalance(balance.toString());
-    } catch (error) {
-      console.log(error);
-    } finally {
-      setUsdcBalanceLoading(false);
-    }
-  };
-
   return (
     <div className="max-w-4xl mx-auto pb-8 flex flex-col h-full">
+      {/* <Card className="mb-8">
+        <CardContent className="p-6">
+          <h2 className="text-lg font-semibold mb-4">Selected Wallet</h2>
+          <Button className="bg-gray-900 hover:bg-gray-700 text-white flex items-center">
+            <Wallet className="mr-2" size={18} />
+            {address && getShortAddress(address)}
+          </Button>
+        </CardContent>
+      </Card> */}
+
       <Card className="">
         <CardContent className="p-6">
           <div className="flex w-full justify-between">
@@ -183,50 +171,17 @@ const TransferForm = () => {
               Payments ({payments.length})
             </h2>
             <div className="flex gap-2 items-center">
-              <Button
-                className="flex gap-2"
-                variant="outline"
-                onClick={getUSDCBalance}
-                disabled={usdcBalanceLoading}
-              >
-                {usdcBalanceLoading ? (
-                  <Loader className="animate-spin" />
-                ) : (
-                  <>
-                    {usdcBalance ? (
-                      `USDC Balance: ${usdcBalance}`
-                    ) : (
-                      <>
-                        <RefreshCcw size={16} />
-                        USDC
-                      </>
-                    )}
-                  </>
-                )}
+              <Button className="flex gap-2" variant="outline">
+                <RefreshCcw size={16} />
+                USDC
+                {/* <span className="font-semibold">14000</span> */}
               </Button>
-              <Button
-                className="flex gap-2"
-                variant="outline"
-                onClick={getBalance}
-                disabled={balanceLoading}
-              >
-                {balanceLoading ? (
-                  <Loader className="animate-spin" />
-                ) : (
-                  <>
-                    {balance ? (
-                      `cUSDC Balance: ${balance}`
-                    ) : (
-                      <>
-                        <RefreshCcw size={16} />
-                        CUSDC
-                      </>
-                    )}
-                  </>
-                )}
-                {/* nce */}
+              <Button className="flex gap-2" variant="outline">
+                <RefreshCcw size={16} />
+                CUSDC
               </Button>
             </div>
+
             {/* <Button
               onClick={addPayment}
               className="bg-gray-900 hover:bg-gray-700 text-white"
@@ -304,22 +259,6 @@ const TransferForm = () => {
               ))}
             </div>
           </div>
-          <div className="flex items-center justify-end w-full gap-2">
-            <Button
-              onClick={addPayment}
-              variant="ghost"
-              // className="bg-gray-900 hover:bg-gray-700 text-white"
-            >
-              <Plus size={16} />
-            </Button>
-            <Button
-          className="bg-gray-900 hover:bg-gray-700 text-white px-6"
-          onClick={reviewPayments}
-        >
-          Review Payments
-        </Button>
-          </div>
-
           {/* <Button
             variant="secondary"
             onClick={addPayment}
@@ -331,26 +270,34 @@ const TransferForm = () => {
         </CardContent>
       </Card>
 
-      <div className="mt-8 flex justify-end gap-4"></div>
+      <div className="mt-8 flex justify-end gap-4">
+        {/* <Button
+          className="bg-gray-900 hover:bg-gray-700 text-white px-6"
+          onClick={getBalance}
+        >
+          {balanceLoading ? (
+            <Loader className="animate-spin" />
+          ) : (
+            <>{balance ? `Balance: ${balance}` : "Get Balance"}</>
+          )}
+        </Button> */}
+        <Button
+          className="bg-gray-900 hover:bg-gray-700 text-white px-6"
+          onClick={reviewPayments}
+        >
+          Review Payments
+        </Button>
+      </div>
     </div>
   );
 };
 
 const Page = () => {
   return (
-    <BasicPageLayout title="Confidential Transfers">
+    <BasicPageLayout title="Transfer Funds">
       <TransferForm />
     </BasicPageLayout>
   );
 };
 
 export default Page;
-
-const RefreshBalanceButton = () => {
-  return (
-    <div className="flex gap-2" variant="outline">
-      <RefreshCcw size={16} className="animate-spin" />
-      {/* <span className="font-semibold">14000</span> */}
-    </div>
-  );
-};

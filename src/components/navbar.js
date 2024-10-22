@@ -2,6 +2,9 @@ import { useWalletContext } from "@/privy/walletContext";
 import { usePrivy } from "@privy-io/react-auth";
 import { LogOut } from "lucide-react";
 import React, { useState } from "react";
+import { Button } from "./ui/button";
+import { Contract } from "ethers";
+import { ENCRYPTEDERC20CONTRACTABI, ENCRYPTEDERC20CONTRACTADDRESS } from "@/utils/contracts";
 const getShortAddress = (address) => {
   if (address.length > 10) {
     return `${address.slice(0, 4)}...${address.slice(-4)}`;
@@ -11,6 +14,7 @@ const getShortAddress = (address) => {
 const Navbar = () => {
   const [isHovered, setIsHovered] = useState(false);
   const { signer, w0, address, isLoading, error } = useWalletContext();
+ 
 
   const { logout } = usePrivy();
   return (
@@ -36,7 +40,8 @@ const Navbar = () => {
         <span className="font-semibold text-lg">HQ POC</span>
       </div>
       <div className="flex items-center space-x-4">
-        <div className="flex items-center">
+       
+        {/* <div className="flex items-center">
           <img
             src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/48/Flag_of_Singapore.svg/383px-Flag_of_Singapore.svg.png"
             alt="Singapore Flag"
@@ -44,7 +49,7 @@ const Navbar = () => {
           />
           <div className="h-6 w-px bg-gray-300 mx-2"></div>
           <span className="">SGD</span>
-        </div>
+        </div> */}
         <div
           className="max-h-full flex items-center bg-white p-1.5 px-2.5 border rounded-lg cursor-pointer w-[8.5rem]"
           onMouseEnter={() => setIsHovered(true)}
