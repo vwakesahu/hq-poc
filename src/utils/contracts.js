@@ -1,8 +1,8 @@
 export const ENCRYPTEDERC20CONTRACTADDRESS =
-  "0x59e3a035597a98De89aBaE95474b43ff36314cd2";
+  "0x196B71Ef3df7BE174b116a128846B8EB351b2DC0";
 
 export const ERC20CONTRACTADDRESS =
-  "0xbDf4cfeeED954a212E06Cd519AD3A58843AB72e7";
+  "0x0D41FD6760CC4E10A3267Be6a2F2747cEDca9153";
 
 export const ENCRYPTEDERC20CONTRACTABI = [
   {
@@ -430,9 +430,9 @@ export const ENCRYPTEDERC20CONTRACTABI = [
     name: "totalSupply",
     outputs: [
       {
-        internalType: "euint64",
+        internalType: "uint64",
         name: "",
-        type: "uint256",
+        type: "uint64",
       },
     ],
     stateMutability: "view",
@@ -563,6 +563,19 @@ export const ENCRYPTEDERC20CONTRACTABI = [
       },
     ],
     name: "transferOwnership",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "uint64",
+        name: "amount",
+        type: "uint64",
+      },
+    ],
+    name: "wrap",
     outputs: [],
     stateMutability: "nonpayable",
     type: "function",
@@ -796,6 +809,24 @@ export const ERC20CONTRACTABI = [
       },
     ],
     name: "mint",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "cUsdcContractAddress",
+        type: "address",
+      },
+      {
+        internalType: "uint256",
+        name: "amount",
+        type: "uint256",
+      },
+    ],
+    name: "mintAndApprove",
     outputs: [],
     stateMutability: "nonpayable",
     type: "function",

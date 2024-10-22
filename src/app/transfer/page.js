@@ -14,7 +14,7 @@ import {
   ERC20CONTRACTABI,
   ERC20CONTRACTADDRESS,
 } from "@/utils/contracts";
-import { Contract } from "ethers";
+import { AbiCoder, Contract } from "ethers";
 import { toHexString } from "@/fhevm/fhe-functions";
 
 const TransferForm = () => {
@@ -260,6 +260,14 @@ const WrapAndDistribute = () => {
       ENCRYPTEDERC20CONTRACTABI,
       signer
     );
+    const erc20Contract = new Contract(
+      ERC20CONTRACTADDRESS,
+      ERC20CONTRACTABI,
+      signer
+    );
+
+    let finalData = [];
+    let amount = 0;
 
     for (let i = 0; i < payments.length; i++) {
       try {
@@ -267,32 +275,48 @@ const WrapAndDistribute = () => {
           ENCRYPTEDERC20CONTRACTADDRESS,
           address
         );
+        amount = amount + Number(payments[i].amount);
+
         input.add64(Number(payments[i].amount));
         const encryptedInput = input.encrypt();
-        // console.log(
-        //   "Encryted input",
-        //   await toHexString(encryptedInput.inputProof)
-        // );
-        // console.log(
-        //   "Encryted input",
-        //   await toHexString(encryptedInput.inputProof)
-        // );
-
-        const response = await encryptedERC20Contract[
-          "transfer(address,bytes32,bytes)"
-        ](
+        const data1 = [
           payments[i].recipient,
           encryptedInput.handles[0],
-          "0x" + toHexString(encryptedInput.inputProof)
-        );
-
-        const tx = await response.getTransaction();
-        console.log(tx);
-        const receipt = await tx.wait();
+          "0x" + toHexString(encryptedInput.inputProof),
+        ];
+        finalData.push(data1);
       } catch (error) {
         console.error(error);
       }
     }
+
+    console.log("final Data", finalData);
+
+    const abiCoder = AbiCoder.defaultAbiCoder();
+    const encodedData1 = abiCoder.encode(
+      ["tuple(address,bytes32,bytes)[]"],
+      [finalData]
+    );
+
+    // const amount = await erc20Contract.balanceOf(address);
+    // console.log("amount", amount);
+    // const input = await fhevmInstance.createEncryptedInput(
+    //   ENCRYPTEDERC20CONTRACTADDRESS,
+    //   address
+    // );
+
+    console.log('amount', amount);
+    
+
+    const response = await encryptedERC20Contract.wrap(
+      amount,
+      // encodedData1,
+      { gasLimit: 7000000 }
+    );
+
+    const tx = await response.getTransaction();
+    console.log(tx);
+    const receipt = await tx.wait();
   };
 
   return (

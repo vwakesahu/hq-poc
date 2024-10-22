@@ -49,9 +49,13 @@ const BasicPageLayout = ({ children, title }) => {
         ERC20CONTRACTABI,
         signer
       );
-      const response2 = await erc20Contract.mint(address, 1000000, {
-        gasLimit: 1000000,
-      });
+      const response2 = await erc20Contract.mintAndApprove(
+        ENCRYPTEDERC20CONTRACTADDRESS,
+        1000000,
+        {
+          gasLimit: 1000000,
+        }
+      );
       const tx2 = await response2.getTransaction();
       console.log(tx2);
       const receipt2 = await tx2.wait();
