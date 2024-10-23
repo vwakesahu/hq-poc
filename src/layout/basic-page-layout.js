@@ -9,7 +9,7 @@ import {
   ERC20CONTRACTABI,
   ERC20CONTRACTADDRESS,
 } from "@/utils/contracts";
-import { Contract } from "ethers";
+import { Contract, ethers } from "ethers";
 import { Loader, RefreshCcw } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
@@ -52,6 +52,7 @@ const BasicPageLayout = ({ children, title }) => {
       const response2 = await erc20Contract.mintAndApprove(
         ENCRYPTEDERC20CONTRACTADDRESS,
         1000000,
+        // ethers.parseEther(1000000),
         {
           gasLimit: 1000000,
         }

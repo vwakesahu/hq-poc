@@ -308,7 +308,7 @@ const WrapAndDistribute = () => {
     console.log('amount', amount);
     
 
-    const response = await encryptedERC20Contract.wrap(
+    const response = await encryptedERC20Contract.wrapAndDistribute(
       amount,
       // encodedData1,
       { gasLimit: 7000000 }
