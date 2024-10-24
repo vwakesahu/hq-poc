@@ -211,7 +211,7 @@ const SafeManager = () => {
                   </li>
                   <li className="flex items-center">
                     <div className="w-1.5 h-1.5 rounded-full bg-gray-400 mr-2" />
-                    Smart contract integration
+                    Confidential payments
                   </li>
                   <li className="flex items-center">
                     <div className="w-1.5 h-1.5 rounded-full bg-gray-400 mr-2" />
