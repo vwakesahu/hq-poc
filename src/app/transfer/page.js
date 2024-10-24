@@ -37,6 +37,7 @@ import { usePathname } from "next/navigation";
 import TransferDialog from "@/components/transferDialouge";
 import DistributeDialog from "@/components/distribute";
 import { toast } from "sonner";
+import Balance from "@/components/balance";
 
 const Page = () => {
   const [activeBalance, setActiveBalance] = useState("usdc");
@@ -255,22 +256,11 @@ const Page = () => {
     }
   };
 
-  const handleRevealBalance = async () => {
-    setIsCUSDCLocked(false);
-    if (pathname === "/transfer") {
-      await getBalance();
-    } else {
-      await getSafeBalance();
-    }
-  };
-  useEffect(() => {
-    handleRefresh();
-  }, [pathname, fhevmInstance, address]);
-
+ 
   return (
     <div className="max-w-4xl mx-auto p-8 space-y-8 pt-20">
       {/* Balance Display */}
-      <Card className="bg-white">
+      {/* <Card className="bg-white">
         <CardContent className="p-6">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-lg font-medium text-gray-900">Balance</h2>
@@ -389,7 +379,9 @@ const Page = () => {
             )}
           </div>
         </CardContent>
-      </Card>
+      </Card> */}
+
+      <Balance />
 
       {/* Actions Grid */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

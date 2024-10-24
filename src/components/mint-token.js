@@ -13,7 +13,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Loader2, Wallet, X } from "lucide-react";
-import { Contract } from "ethers";
+import { Contract, ethers } from "ethers";
 import { toast } from "sonner";
 import { useWalletContext } from "@/privy/walletContext";
 import {
@@ -60,9 +60,15 @@ const MintTokensDialog = ({ path }) => {
       signer
     );
 
-    const response = await encryptedErc20Contract.mint(targetAddress, amount, {
-      gasLimit: 1000000,
-    });
+    // console.log(ethers.parseUnits(amount.toString(), 4));
+
+    const response = await encryptedErc20Contract.mint(
+      targetAddress,
+      ethers.parseUnits(amount.toString(), 4),
+      {
+        gasLimit: 1000000,
+      }
+    );
     const tx = await response.getTransaction();
     console.log(tx);
     await tx.wait();

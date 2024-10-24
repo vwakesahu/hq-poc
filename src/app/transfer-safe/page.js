@@ -28,8 +28,6 @@ const TransferForm = () => {
   const { signer, w0, address, isLoading, error } = useWalletContext();
   const { getContractAddress } = useContractAddress();
   const { instance: fhevmInstance } = useFhevm();
-  const [balance, setBalance] = useState(null);
-  const [balanceLoading, setBalanceLoading] = useState(false);
   const [payments, setPayments] = useState([
     {
       recipient: "",
@@ -72,9 +70,7 @@ const TransferForm = () => {
     setPayments(updatedPayments);
   };
 
-  console.log("payments", payments);
-
-  const confidentialTransfer = async () => {
+  const reviewPayments = async () => {
     console.log("Form values:", payments);
     const encryptedERC20Contract = new Contract(
       ENCRYPTEDERC20CONTRACTADDRESS,
@@ -245,41 +241,6 @@ const TransferForm = () => {
     }
   };
 
-  const reviewPayments = async () => {
-    console.log("Form values:", payments);
-
-    for (let i = 0; i < payments.length; i++) {
-      try {
-        const encryptedERC20Contract = new Contract(
-          payments[i].safeContractAddress,
-          SAFEABI,
-          signer
-        );
-
-        const input = await fhevmInstance.createEncryptedInput(
-          ENCRYPTEDERC20CONTRACTADDRESS,
-          address
-        );
-        input.add64(Number(payments[i].amount));
-        const encryptedInput = input.encrypt();
-
-        const response = await encryptedERC20Contract[
-          "transfer(address,bytes32,bytes)"
-        ](
-          payments[i].recipient,
-          encryptedInput.handles[0],
-          "0x" + toHexString(encryptedInput.inputProof)
-        );
-
-        const tx = await response.getTransaction();
-        console.log(tx);
-        const receipt = await tx.wait();
-      } catch (error) {
-        console.error(error);
-      }
-    }
-  };
-
   return (
     <div className="max-w-4xl mx-auto pb-8 flex flex-col h-full">
       <Button onClick={claimPayments}>Claim</Button>
@@ -382,7 +343,7 @@ const TransferForm = () => {
       <div className="mt-8 flex justify-end gap-4">
         <Button
           className="bg-gray-900 hover:bg-gray-700 text-white px-6"
-          onClick={confidentialTransfer}
+          onClick={reviewPayments}
         >
           Review Payments
         </Button>
@@ -392,12 +353,7 @@ const TransferForm = () => {
 };
 
 const Page = () => {
-  const [safeContractAddress, setSafeContractAddress] = useState("");
-  return (
-    <BasicPageLayout>
-      <TransferForm />
-    </BasicPageLayout>
-  );
+  return <TransferForm />;
 };
 
 export default Page;
