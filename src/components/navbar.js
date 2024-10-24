@@ -2,9 +2,8 @@ import { useWalletContext } from "@/privy/walletContext";
 import { usePrivy } from "@privy-io/react-auth";
 import { LogOut } from "lucide-react";
 import React, { useState } from "react";
-import { Button } from "./ui/button";
-import { Contract } from "ethers";
-import { ENCRYPTEDERC20CONTRACTABI, ENCRYPTEDERC20CONTRACTADDRESS } from "@/utils/contracts";
+import MintTokensDialog from "./mint-token";
+import { usePathname } from "next/navigation";
 const getShortAddress = (address) => {
   if (address.length > 10) {
     return `${address.slice(0, 4)}...${address.slice(-4)}`;
@@ -12,9 +11,10 @@ const getShortAddress = (address) => {
   return address;
 };
 const Navbar = () => {
+  const [open, setOpen] = useState(true);
   const [isHovered, setIsHovered] = useState(false);
   const { signer, w0, address, isLoading, error } = useWalletContext();
- 
+  const pathname = usePathname();
 
   const { logout } = usePrivy();
   return (
@@ -40,7 +40,7 @@ const Navbar = () => {
         <span className="font-semibold text-lg">HQ POC</span>
       </div>
       <div className="flex items-center space-x-4">
-       
+        <MintTokensDialog open={open} onOpenChange={setOpen} path={pathname} />
         {/* <div className="flex items-center">
           <img
             src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/48/Flag_of_Singapore.svg/383px-Flag_of_Singapore.svg.png"

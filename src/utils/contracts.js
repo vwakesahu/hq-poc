@@ -1,8 +1,8 @@
 export const ENCRYPTEDERC20CONTRACTADDRESS =
-  "0x4921f7b5B40fA3D8082Fd55920fD63cc6a40f9e1";
+  "0x8433B636DAd47957ECA036083E81f1B6B44d7c04";
 
 export const ERC20CONTRACTADDRESS =
-  "0x312a8056252f82251aD71FfDe6DF09e49309B8F7";
+  "0x36123533Ca8cd7751aCC0D9D12135AbE8240199b";
 
 export const ENCRYPTEDERC20CONTRACTABI = [
   {
@@ -264,6 +264,19 @@ export const ENCRYPTEDERC20CONTRACTABI = [
       },
     ],
     stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "userAddress",
+        type: "address",
+      },
+    ],
+    name: "giveAuthorization",
+    outputs: [],
+    stateMutability: "nonpayable",
     type: "function",
   },
   {

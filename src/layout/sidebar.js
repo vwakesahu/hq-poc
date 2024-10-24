@@ -14,6 +14,7 @@ import {
   Diamond,
   CoinsIcon,
   Download,
+  User,
 } from "lucide-react";
 import { Contract } from "ethers";
 import {
@@ -57,33 +58,19 @@ const MenuSection = ({ title, children }) => (
 export default function Sidebar() {
   const [mintLoading, setMintLoading] = useState(false);
   const { address, signer } = useWalletContext();
-  const mintTokens = async () => {
-    try {
-      setMintLoading(true);
-      const encryptedErc20Contract = new Contract(
-        ENCRYPTEDERC20CONTRACTADDRESS,
-        ENCRYPTEDERC20CONTRACTABI,
-        signer
-      );
+  // const authorize = async () => {
+  //   const encryptedErc20Contract = new Contract(
+  //     ENCRYPTEDERC20CONTRACTADDRESS,
+  //     ENCRYPTEDERC20CONTRACTABI,
+  //     signer
+  //   );
 
-      console.log(encryptedErc20Contract);
-
-      const response = await encryptedErc20Contract.mint(1000000, {
-        gasLimit: 1000000,
-      });
-
-      const tx = await response.getTransaction();
-      console.log(tx);
-      const receipt = await tx.wait();
-    } catch (error) {
-      console.log("got some error");
-      console.error(error);
-      setMintLoading(false);
-    } finally {
-      console.log("done");
-      setMintLoading(false);
-    }
-  };
+  //   const response = await encryptedErc20Contract.giveAuthorization(address, {
+  //     gasLimit: 1000000,
+  //   });
+  //   const receipt = await response.getTransaction();
+  //   await receipt.wait();
+  // };
   return (
     <div className="flex flex-col h-full w-56 text-gray-800 px-4">
       <div className="flex w-full gap-2 items-center">
@@ -95,8 +82,11 @@ export default function Sidebar() {
                 {address?.slice(0, 5) + "..."}
               </span>
             </div>
-            <div className="flex items-center justify-center w-6 h-6 rounded-lg bg-white text-black">
-              <ChevronDown size={16} />
+            <div
+              className="flex items-center justify-center w-6 h-6 rounded-lg bg-white text-black cursor-pointer"
+              // onClick={authorize}
+            >
+              <User size={16} />
             </div>
           </div>
         </div>

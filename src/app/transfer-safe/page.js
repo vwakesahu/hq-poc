@@ -12,69 +12,256 @@ import {
   ENCRYPTEDERC20CONTRACTABI,
   ENCRYPTEDERC20CONTRACTADDRESS,
 } from "@/utils/contracts";
-import { Contract } from "ethers";
+import { AbiCoder, Contract } from "ethers";
 import { toHexString } from "@/fhevm/fhe-functions";
 import { SAFEABI } from "@/utils/safeContract";
 import { useContractAddress } from "@/firebase/getContract";
+import SafeTransferDialouge from "@/components/safeTransferDialouge";
+import SafeDistribute from "@/components/safeDistribute";
+import {
+  buildSafeTransaction,
+  buildSignatureBytes,
+  safeApproveHash,
+} from "@/utils/buildSafeTx";
 
 const TransferForm = () => {
   const { signer, w0, address, isLoading, error } = useWalletContext();
-  const { updateContractAddress, getContractAddress, loading } =
-    useContractAddress();
+  const { getContractAddress } = useContractAddress();
+  const { instance: fhevmInstance } = useFhevm();
+  const [balance, setBalance] = useState(null);
+  const [balanceLoading, setBalanceLoading] = useState(false);
   const [payments, setPayments] = useState([
     {
       recipient: "",
       amount: "",
+      safeContractAddress: "",
     },
   ]);
-  const { instance: fhevmInstance } = useFhevm();
-  const [balance, setBalance] = useState(null);
-  const [balanceLoading, setBalanceLoading] = useState(false);
 
   const addPayment = () => {
-    setPayments([...payments, { recipient: "", amount: "" }]);
+    setPayments([
+      ...payments,
+      { recipient: "", amount: "", safeContractAddress: "" },
+    ]);
   };
 
   const removePayment = (index) => {
     setPayments(payments.filter((_, i) => i !== index));
   };
 
-  const updatePayment = (index, field, value) => {
+  const updatePayment = async (index, field, value) => {
     const updatedPayments = [...payments];
     updatedPayments[index][field] = value;
+
+    // If recipient field is updated, fetch and update the safe contract address
+    if (field === "recipient" && value) {
+      try {
+        const safeContractAddress = await getContractAddress(value);
+        if (safeContractAddress.data) {
+          updatedPayments[index].safeContractAddress =
+            safeContractAddress.data.contractAddress;
+        } else {
+          updatedPayments[index].safeContractAddress = "";
+        }
+      } catch (error) {
+        console.error("Error fetching safe contract address:", error);
+        updatedPayments[index].safeContractAddress = "";
+      }
+    }
+
     setPayments(updatedPayments);
   };
 
-  const reviewPayments = async () => {
-    console.log("Form values:", payments);
-    const safeContractAddress = await getContractAddress(address);
-    if (!safeContractAddress.data) {
-      console.error("No Safe contract address found");
-      return;
-    }
+  console.log("payments", payments);
 
+  const confidentialTransfer = async () => {
+    console.log("Form values:", payments);
     const encryptedERC20Contract = new Contract(
-      safeContractAddress.data.contractAddress,
-      SAFEABI,
+      ENCRYPTEDERC20CONTRACTADDRESS,
+      ENCRYPTEDERC20CONTRACTABI,
       signer
     );
 
-    for (let i = 0; i < payments.length; i++) {
-      try {
+    try {
+      for (let i = 0; i < payments.length; i++) {
         const input = await fhevmInstance.createEncryptedInput(
           ENCRYPTEDERC20CONTRACTADDRESS,
           address
         );
         input.add64(Number(payments[i].amount));
         const encryptedInput = input.encrypt();
-        // console.log(
-        //   "Encryted input",
-        //   await toHexString(encryptedInput.inputProof)
+
+        const fnSelector = "0x7b7e0a5a";
+        const safeAddress = await getContractAddress(address);
+        if (!safeAddress.data) {
+          console.error("No Safe contract address found");
+          return;
+        }
+
+        const safecontractAddress = safeAddress.data.contractAddress;
+        const contractOwnerSafe = new Contract(
+          safecontractAddress,
+          SAFEABI,
+          signer
+        );
+
+        const txn2 = {
+          to: ENCRYPTEDERC20CONTRACTADDRESS,
+          value: 0,
+          data:
+            fnSelector +
+            AbiCoder.defaultAbiCoder()
+              .encode(
+                ["address", "bytes32", "bytes"],
+                [
+                  payments[i].safeContractAddress,
+                  encryptedInput.handles[0],
+                  "0x" + toHexString(encryptedInput.inputProof),
+                ]
+              )
+              .slice(2),
+          operation: 0,
+          safeTxGas: 1000000,
+          baseGas: 0,
+          gasPrice: 0,
+          gasToken: address,
+          refundReceiver: safecontractAddress,
+          nonce: await contractOwnerSafe.nonce(),
+        };
+
+        const tx2 = buildSafeTransaction(txn2);
+
+        const signatureBytes2 = buildSignatureBytes([
+          await safeApproveHash(signer, contractOwnerSafe, tx2, true),
+        ]);
+
+        try {
+          const response = await contractOwnerSafe.execTransaction(
+            ENCRYPTEDERC20CONTRACTADDRESS,
+            0,
+            fnSelector +
+              AbiCoder.defaultAbiCoder()
+                .encode(
+                  ["address", "bytes32", "bytes"],
+                  [
+                    payments[i].safeContractAddress,
+                    encryptedInput.handles[0],
+                    "0x" + toHexString(encryptedInput.inputProof),
+                  ]
+                )
+                .slice(2),
+            // "0xc6dad082",
+            0,
+            1000000,
+            0,
+            // 1000000,
+            0,
+            address,
+            safecontractAddress,
+            signatureBytes2,
+            { gasLimit: 10000000 }
+          );
+          const txn = await response.getTransaction();
+          console.log("Transaction hash:", txn.hash);
+          await txn.wait(1);
+          console.log("Wrap and distribute to receiver safes successful!");
+        } catch (error) {
+          console.error("Wrap and distribute to receiver safes failed:", error);
+        }
+
+        // const response = await encryptedERC20Contract[
+        //   "transfer(address,bytes32,bytes)"
+        // ](
+        //   payments[i].safeContractAddress,
+        //   encryptedInput.handles[0],
+        //   "0x" + toHexString(encryptedInput.inputProof)
         // );
-        // console.log(
-        //   "Encryted input",
-        //   await toHexString(encryptedInput.inputProof)
-        // );
+
+        // const tx = await response.getTransaction();
+        // await tx.wait();
+      }
+    } catch (err) {
+      console.error(err);
+      setError(err.message || "Transaction failed. Please try again.");
+    } finally {
+      // setIsReviewing(false);
+    }
+  };
+
+  const claimPayments = async () => {
+    const safeAddress = await getContractAddress(address);
+    if (!safeAddress.data) {
+      console.error("No Safe contract address found");
+      return;
+    }
+    const safecontractAddress = safeAddress.data.contractAddress;
+    const contractOwnerSafe = new Contract(
+      safecontractAddress,
+      SAFEABI,
+      signer
+    );
+
+    try {
+      let claimFnSelector = "0x4e71d92d";
+
+      const txn2 = {
+        to: ENCRYPTEDERC20CONTRACTADDRESS,
+        value: 0,
+        data: claimFnSelector,
+        operation: 0,
+        safeTxGas: 1000000,
+        baseGas: 0,
+        gasPrice: 1000000,
+        gasToken: safecontractAddress,
+        refundReceiver: address,
+        nonce: await contractOwnerSafe.nonce(),
+      };
+
+      const tx2 = buildSafeTransaction(txn2);
+      const signatureBytes5 = buildSignatureBytes([
+        await safeApproveHash(signer, contractOwnerSafe, tx2, true),
+      ]);
+
+      const txn = await contractOwnerSafe.execTransaction(
+        ENCRYPTEDERC20CONTRACTADDRESS,
+        0,
+        claimFnSelector,
+        // "0xc6dad082",
+        0,
+        1000000,
+        0,
+        // 1000000,
+        0,
+        address,
+        safecontractAddress,
+        signatureBytes5,
+        { gasLimit: 10000000 }
+      );
+      console.log("Transaction hash:", txn.hash);
+      await txn.wait(1);
+      console.log("Claim by Carol safe successful!");
+    } catch (error) {
+      console.error("Claim by Carol safe failed:", error);
+    }
+  };
+
+  const reviewPayments = async () => {
+    console.log("Form values:", payments);
+
+    for (let i = 0; i < payments.length; i++) {
+      try {
+        const encryptedERC20Contract = new Contract(
+          payments[i].safeContractAddress,
+          SAFEABI,
+          signer
+        );
+
+        const input = await fhevmInstance.createEncryptedInput(
+          ENCRYPTEDERC20CONTRACTADDRESS,
+          address
+        );
+        input.add64(Number(payments[i].amount));
+        const encryptedInput = input.encrypt();
 
         const response = await encryptedERC20Contract[
           "transfer(address,bytes32,bytes)"
@@ -95,40 +282,19 @@ const TransferForm = () => {
 
   return (
     <div className="max-w-4xl mx-auto pb-8 flex flex-col h-full">
-      {/* <Card className="mb-8">
-        <CardContent className="p-6">
-          <h2 className="text-lg font-semibold mb-4">Selected Wallet</h2>
-          <Button className="bg-gray-900 hover:bg-gray-700 text-white flex items-center">
-            <Wallet className="mr-2" size={18} />
-            {address && getShortAddress(address)}
-          </Button>
-        </CardContent>
-      </Card> */}
-
-      <Card className="">
+      <Button onClick={claimPayments}>Claim</Button>
+      <Card>
         <CardContent className="p-6">
           <div className="flex w-full justify-between">
             <h2 className="text-lg font-semibold pb-4">
               Payments ({payments.length})
             </h2>
-            <div className="flex gap-2 items-center">
-              <Button className="flex gap-2" variant="outline">
-                <RefreshCcw size={16} />
-                USDC
-                {/* <span className="font-semibold">14000</span> */}
-              </Button>
-              <Button className="flex gap-2" variant="outline">
-                <RefreshCcw size={16} />
-                CUSDC
-              </Button>
-            </div>
-
-            {/* <Button
+            <Button
               onClick={addPayment}
               className="bg-gray-900 hover:bg-gray-700 text-white"
             >
               <Plus size={16} />
-            </Button> */}
+            </Button>
           </div>
 
           <div className="max-h-80 overflow-y-auto mb-4 py-1 scrollbar-hidden">
@@ -173,6 +339,13 @@ const TransferForm = () => {
                             size={18}
                           />
                         </div>
+                        {payment.safeContractAddress && (
+                          <div className="text-sm font-semibold mt-4">
+                            Safe Contract:{" "}
+                            {payment.safeContractAddress.slice(0, 6)}...
+                            {payment.safeContractAddress.slice(-4)}
+                          </div>
+                        )}
                       </div>
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -203,10 +376,13 @@ const TransferForm = () => {
         </CardContent>
       </Card>
 
+      <SafeTransferDialouge />
+      <SafeDistribute />
+
       <div className="mt-8 flex justify-end gap-4">
         <Button
           className="bg-gray-900 hover:bg-gray-700 text-white px-6"
-          onClick={reviewPayments}
+          onClick={confidentialTransfer}
         >
           Review Payments
         </Button>

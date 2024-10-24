@@ -9,6 +9,7 @@ export const createFhevmInstance = async () => {
       chainId: 21097,
       networkUrl: "https://validator.rivest.inco.org/",
       gatewayUrl: "https://gateway.rivest.inco.org/",
+      aclAddress: "0x2Fb4341027eb1d2aD8B5D9708187df8633cAFA92",
     });
   }
   return fhevmInstance;
