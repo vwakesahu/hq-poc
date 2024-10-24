@@ -209,7 +209,7 @@ const SafeDistribute = () => {
     let fnSelector = "0xf98aa085";
 
     let finalData = [];
-    let amount = 0;
+    let amount = ethers.parseUnits("0", 4);
 
     for (let i = 0; i < payments.length; i++) {
       const input = await fhevmInstance.createEncryptedInput(
