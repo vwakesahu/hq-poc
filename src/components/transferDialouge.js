@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Contract } from "ethers";
+import { Contract, ethers } from "ethers";
 import {
   Plus,
   Trash2,
@@ -67,7 +67,7 @@ const TransferDialog = () => {
           ENCRYPTEDERC20CONTRACTADDRESS,
           address
         );
-        input.add64(Number(payments[i].amount));
+        input.add64(ethers.parseUnits(payments[i].amount.toString(), 4));
         const encryptedInput = input.encrypt();
 
         const response = await encryptedERC20Contract[
