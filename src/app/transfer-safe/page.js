@@ -1,7 +1,7 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import { Gift, Loader2 } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
+import { Gift, Loader2, Shield } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useWalletContext } from "@/privy/walletContext";
 import { ENCRYPTEDERC20CONTRACTADDRESS } from "@/utils/contracts";
 import { Contract } from "ethers";
@@ -174,23 +174,56 @@ const SafeManager = () => {
 
   if (error?.includes("No contract address found") || !hasSafe) {
     return (
-      <Card className="max-w-md mx-auto mt-8 p-6">
-        <div className="space-y-4">
-          <div className="text-center mb-6">
-            <h2 className="text-xl font-semibold text-gray-900">Deploy Safe</h2>
+      <div className="h-full grid place-items-center p-4">
+        <Card className="w-full max-w-md border">
+          <CardHeader className="text-center space-y-2 pb-2">
+            <div className="mx-auto bg-gray-100 w-16 h-16 rounded-full grid place-items-center mb-2">
+              <Shield className="w-8 h-8" />
+            </div>
+            <CardTitle className="text-2xl font-bold">
+              Deploy Safe
+            </CardTitle>
             {error ? (
-              <p className="text-amber-600 mt-2">
-                No Safe found for this address. Please deploy one to continue.
-              </p>
+              <div className="flex items-center justify-center space-x-2">
+                <div className="p-3 bg-gray-100 rounded-lg">
+                  <p className="text-sm font-medium">
+                    No Safe found for this address. Please deploy one to
+                    continue.
+                  </p>
+                </div>
+              </div>
             ) : (
-              <p className="text-gray-600 mt-2">
-                You need to deploy a Safe before you can make transfers
+              <p className="text-gray-600 text-sm">
+                Secure your assets by deploying a new Safe wallet
               </p>
             )}
-          </div>
-          <DeploySafe onDeploySuccess={handleDeploySuccess} />
-        </div>
-      </Card>
+          </CardHeader>
+          <CardContent className="pt-6">
+            <div className="space-y-6">
+              <div className="bg-gray-50 rounded-lg p-4">
+                <h3 className="font-medium mb-2">
+                  Benefits of Safe:
+                </h3>
+                <ul className="space-y-2 text-sm">
+                  <li className="flex items-center">
+                    <div className="w-1.5 h-1.5 rounded-full bg-gray-400 mr-2" />
+                    Multi-signature security
+                  </li>
+                  <li className="flex items-center">
+                    <div className="w-1.5 h-1.5 rounded-full bg-gray-400 mr-2" />
+                    Smart contract integration
+                  </li>
+                  <li className="flex items-center">
+                    <div className="w-1.5 h-1.5 rounded-full bg-gray-400 mr-2" />
+                    Enhanced fund protection
+                  </li>
+                </ul>
+              </div>
+              <DeploySafe onDeploySuccess={handleDeploySuccess} />
+            </div>
+          </CardContent>
+        </Card>
+      </div>
     );
   }
 

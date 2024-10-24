@@ -1,9 +1,10 @@
 import { useWalletContext } from "@/privy/walletContext";
 import { usePrivy } from "@privy-io/react-auth";
-import { LogOut } from "lucide-react";
+import { LogOut, X } from "lucide-react";
 import React, { useState } from "react";
 import MintTokensDialog from "./mint-token";
 import { usePathname } from "next/navigation";
+import Image from "next/image";
 const getShortAddress = (address) => {
   if (address.length > 10) {
     return `${address.slice(0, 4)}...${address.slice(-4)}`;
@@ -19,25 +20,11 @@ const Navbar = () => {
   const { logout } = usePrivy();
   return (
     <nav className="flex items-center justify-between pl-4 pr-6 py-3">
-      <div className="flex items-center">
-        <svg
-          width="28"
-          height="28"
-          viewBox="0 0 28 28"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-          className="mr-2"
-        >
-          <path
-            d="M13.9998 27.3333C21.3636 27.3333 27.3332 21.3638 27.3332 14C27.3332 6.63621 21.3636 0.666672 13.9998 0.666672C6.63604 0.666672 0.666504 6.63621 0.666504 14C0.666504 21.3638 6.63604 27.3333 13.9998 27.3333Z"
-            fill="#FF4F64"
-          />
-          <path
-            d="M22.9798 8.38667L16.2465 15.12L13.9998 12.8733L11.7532 15.12L5.01984 8.38667C7.35317 5.60667 10.5065 3.83334 13.9998 3.83334C17.4932 3.83334 20.6465 5.60667 22.9798 8.38667Z"
-            fill="white"
-          />
-        </svg>
-        <span className="font-semibold text-lg">HQ POC</span>
+      <div className="flex items-center gap-2">
+        <Image src={"hq.svg"} alt="HQ POC" width={45} height={45} />
+        <X size={20} />
+        <Image src={"inco.svg"} alt="HQ POC" width={30} height={30} />
+        {/* <span className="font-semibold text-lg">HQ POC</span> */}
       </div>
       <div className="flex items-center space-x-4">
         <MintTokensDialog open={open} onOpenChange={setOpen} path={pathname} />
