@@ -1,12 +1,13 @@
-"use client";
 import { Button } from "@/components/ui/button";
 import { useWalletContext } from "@/privy/walletContext";
 import React, { useState } from "react";
 import { ethers } from "ethers";
 import { SAFEABI, SAFEBYTECODE } from "@/utils/safeContract";
 import { useContractAddress } from "@/firebase/getContract";
+import { toast } from "sonner";
+import { Loader2 } from "lucide-react";
 
-const DeploySafe = () => {
+const DeploySafe = ({ onDeploySuccess }) => {
   const { signer, address } = useWalletContext();
   const [isDeploying, setIsDeploying] = useState(false);
   const [status, setStatus] = useState("");
@@ -15,7 +16,7 @@ const DeploySafe = () => {
 
   const deployContract = async () => {
     if (!signer || !address) {
-      setStatus("No signer or address available");
+      toast.error("No signer or address available");
       return;
     }
 
@@ -43,33 +44,46 @@ const DeploySafe = () => {
       if (!tx) throw new Error("No deployment transaction found");
       const txResponse = await tx.getTransaction();
       const addressToBeCreated = txResponse.creates;
-      console.log(addressToBeCreated);
-      setTimeout(async () => {
-        try {
-          const result = await updateContractAddress(
-            address,
-            addressToBeCreated
-          );
-          console.log("Success:", result);
-        } catch (err) {
-          console.error("Error:", err.message);
-        }
-        setContractAddress(addressToBeCreated);
-        setIsDeploying(false);
-        setStatus(`Contract deployed at: ${addressToBeCreated}`);
-      }, 8000);
+
+      // Wait for deployment and database update
+      await new Promise((resolve) => {
+        setTimeout(async () => {
+          try {
+            await updateContractAddress(address, addressToBeCreated);
+            setContractAddress(addressToBeCreated);
+            toast.success("Safe deployed successfully!");
+            onDeploySuccess?.(); // Call the success callback
+          } catch (err) {
+            console.error("Error updating contract address:", err);
+            toast.error("Error updating contract address");
+          }
+          resolve();
+        }, 8000);
+      });
     } catch (error) {
       console.error("Deployment error:", error);
-      setStatus(`Deployment failed: ${error.message}`);
+      toast.error(`Deployment failed: ${error.message}`);
     } finally {
       setIsDeploying(false);
     }
   };
 
   return (
-    <div className="p-4 space-y-4">
-      <Button onClick={deployContract} disabled={isDeploying}>
-        {isDeploying ? "Deploying..." : "Deploy Safe"}
+    <div className="space-y-4">
+      {status && <p className="text-sm text-gray-600 text-center">{status}</p>}
+      <Button
+        onClick={deployContract}
+        disabled={isDeploying}
+        className="w-full"
+      >
+        {isDeploying ? (
+          <div className="flex items-center gap-2">
+            <Loader2 className="h-4 w-4 animate-spin" />
+            <span>Deploying Safe...</span>
+          </div>
+        ) : (
+          "Deploy Safe"
+        )}
       </Button>
     </div>
   );

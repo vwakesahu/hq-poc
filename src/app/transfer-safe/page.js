@@ -1,27 +1,10 @@
 "use client";
-import React, { useState } from "react";
-import {
-  Gift,
-  Loader,
-  Loader2,
-  Plus,
-  RefreshCcw,
-  Trash2,
-  Wallet,
-} from "lucide-react";
+import React, { useEffect, useState } from "react";
+import { Gift, Loader2 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import BasicPageLayout from "@/layout/basic-page-layout";
 import { useWalletContext } from "@/privy/walletContext";
-import { useFhevm } from "@/fhevm/fhevm-context";
-import { Wallet as WalletIcon, CreditCard } from "lucide-react";
-import {
-  ENCRYPTEDERC20CONTRACTABI,
-  ENCRYPTEDERC20CONTRACTADDRESS,
-} from "@/utils/contracts";
-import { AbiCoder, Contract } from "ethers";
-import { toHexString } from "@/fhevm/fhe-functions";
+import { ENCRYPTEDERC20CONTRACTADDRESS } from "@/utils/contracts";
+import { Contract } from "ethers";
 import { SAFEABI } from "@/utils/safeContract";
 import { useContractAddress } from "@/firebase/getContract";
 import SafeTransferDialouge from "@/components/safeTransferDialouge";
@@ -33,162 +16,12 @@ import {
 } from "@/utils/buildSafeTx";
 import Balance from "@/components/balance";
 import { toast } from "sonner";
+import DeploySafe from "@/components/deploySafe";
 
 const TransferForm = () => {
-  const { signer, w0, address, isLoading, error } = useWalletContext();
+  const { signer, address } = useWalletContext();
   const { getContractAddress } = useContractAddress();
   const [claimLoading, setClaimLoading] = useState(false);
-  const { instance: fhevmInstance } = useFhevm();
-  const [payments, setPayments] = useState([
-    {
-      recipient: "",
-      amount: "",
-      safeContractAddress: "",
-    },
-  ]);
-
-  const addPayment = () => {
-    setPayments([
-      ...payments,
-      { recipient: "", amount: "", safeContractAddress: "" },
-    ]);
-  };
-
-  const removePayment = (index) => {
-    setPayments(payments.filter((_, i) => i !== index));
-  };
-
-  const updatePayment = async (index, field, value) => {
-    const updatedPayments = [...payments];
-    updatedPayments[index][field] = value;
-
-    // If recipient field is updated, fetch and update the safe contract address
-    if (field === "recipient" && value) {
-      try {
-        const safeContractAddress = await getContractAddress(value);
-        if (safeContractAddress.data) {
-          updatedPayments[index].safeContractAddress =
-            safeContractAddress.data.contractAddress;
-        } else {
-          updatedPayments[index].safeContractAddress = "";
-        }
-      } catch (error) {
-        console.error("Error fetching safe contract address:", error);
-        updatedPayments[index].safeContractAddress = "";
-      }
-    }
-
-    setPayments(updatedPayments);
-  };
-
-  const reviewPayments = async () => {
-    console.log("Form values:", payments);
-
-    try {
-      for (let i = 0; i < payments.length; i++) {
-        const input = await fhevmInstance.createEncryptedInput(
-          ENCRYPTEDERC20CONTRACTADDRESS,
-          address
-        );
-        input.add64(Number(payments[i].amount));
-        const encryptedInput = input.encrypt();
-
-        const fnSelector = "0x7b7e0a5a";
-        const safeAddress = await getContractAddress(address);
-        if (!safeAddress.data) {
-          console.error("No Safe contract address found");
-          return;
-        }
-
-        const safecontractAddress = safeAddress.data.contractAddress;
-        const contractOwnerSafe = new Contract(
-          safecontractAddress,
-          SAFEABI,
-          signer
-        );
-
-        const txn2 = {
-          to: ENCRYPTEDERC20CONTRACTADDRESS,
-          value: 0,
-          data:
-            fnSelector +
-            AbiCoder.defaultAbiCoder()
-              .encode(
-                ["address", "bytes32", "bytes"],
-                [
-                  payments[i].safeContractAddress,
-                  encryptedInput.handles[0],
-                  "0x" + toHexString(encryptedInput.inputProof),
-                ]
-              )
-              .slice(2),
-          operation: 0,
-          safeTxGas: 1000000,
-          baseGas: 0,
-          gasPrice: 0,
-          gasToken: address,
-          refundReceiver: safecontractAddress,
-          nonce: await contractOwnerSafe.nonce(),
-        };
-
-        const tx2 = buildSafeTransaction(txn2);
-
-        const signatureBytes2 = buildSignatureBytes([
-          await safeApproveHash(signer, contractOwnerSafe, tx2, true),
-        ]);
-
-        try {
-          const response = await contractOwnerSafe.execTransaction(
-            ENCRYPTEDERC20CONTRACTADDRESS,
-            0,
-            fnSelector +
-              AbiCoder.defaultAbiCoder()
-                .encode(
-                  ["address", "bytes32", "bytes"],
-                  [
-                    payments[i].safeContractAddress,
-                    encryptedInput.handles[0],
-                    "0x" + toHexString(encryptedInput.inputProof),
-                  ]
-                )
-                .slice(2),
-            // "0xc6dad082",
-            0,
-            1000000,
-            0,
-            // 1000000,
-            0,
-            address,
-            safecontractAddress,
-            signatureBytes2,
-            { gasLimit: 10000000 }
-          );
-          const txn = await response.getTransaction();
-          console.log("Transaction hash:", txn.hash);
-          await txn.wait(1);
-          console.log("Wrap and distribute to receiver safes successful!");
-        } catch (error) {
-          console.error("Wrap and distribute to receiver safes failed:", error);
-        }
-
-        // const response = await encryptedERC20Contract[
-        //   "transfer(address,bytes32,bytes)"
-        // ](
-        //   payments[i].safeContractAddress,
-        //   encryptedInput.handles[0],
-        //   "0x" + toHexString(encryptedInput.inputProof)
-        // );
-
-        // const tx = await response.getTransaction();
-        // await tx.wait();
-      }
-    } catch (err) {
-      console.error(err);
-      setError(err.message || "Transaction failed. Please try again.");
-    } finally {
-      // setIsReviewing(false);
-    }
-  };
 
   const claimPayments = async () => {
     setClaimLoading(true);
@@ -254,98 +87,6 @@ const TransferForm = () => {
   return (
     <div className="max-w-4xl mx-auto p-8 space-y-8 pt-20">
       <Balance />
-      {/* <Card>
-        <CardContent className="p-6">
-          <div className="flex w-full justify-between">
-            <h2 className="text-lg font-semibold pb-4">
-              Payments ({payments.length})
-            </h2>
-            <Button
-              onClick={addPayment}
-              className="bg-gray-900 hover:bg-gray-700 text-white"
-            >
-              <Plus size={16} />
-            </Button>
-          </div>
-
-          <div className="max-h-80 overflow-y-auto mb-4 py-1 scrollbar-hidden">
-            <div className="space-y-4">
-              {payments.map((payment, index) => (
-                <Card
-                  key={index}
-                  className="border border-black/15 shadow-none bg-muted"
-                >
-                  <CardContent className="p-4">
-                    <div className="flex items-center justify-between mb-4">
-                      <span className="font-medium text-gray-700">
-                        Payment {index + 1}
-                      </span>
-                      {index > 0 && (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => removePayment(index)}
-                          className="text-red-500 hover:text-red-700 hover:border hover:border-red-700 hover:bg-red-50"
-                        >
-                          <Trash2 size={16} />
-                        </Button>
-                      )}
-                    </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Recipient *
-                        </label>
-                        <div className="relative">
-                          <Input
-                            placeholder="Enter recipient address"
-                            className="w-full pl-10 bg-white"
-                            value={payment.recipient}
-                            onChange={(e) =>
-                              updatePayment(index, "recipient", e.target.value)
-                            }
-                          />
-                          <WalletIcon
-                            className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
-                            size={18}
-                          />
-                        </div>
-                        {payment.safeContractAddress && (
-                          <div className="text-sm font-semibold mt-4">
-                            Safe Contract:{" "}
-                            {payment.safeContractAddress.slice(0, 6)}...
-                            {payment.safeContractAddress.slice(-4)}
-                          </div>
-                        )}
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Amount *
-                        </label>
-                        <div className="relative">
-                          <Input
-                            placeholder="Enter amount"
-                            className="w-full pl-10 bg-white"
-                            type="number"
-                            value={payment.amount}
-                            onChange={(e) =>
-                              updatePayment(index, "amount", e.target.value)
-                            }
-                          />
-                          <CreditCard
-                            className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
-                            size={18}
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </div>
-        </CardContent>
-      </Card> */}
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <SafeTransferDialouge />
@@ -379,21 +120,94 @@ const TransferForm = () => {
           </CardContent>
         </Card>
       </div>
-
-      {/* <div className="mt-8 flex justify-end gap-4">
-        <Button
-          className="bg-gray-900 hover:bg-gray-700 text-white px-6"
-          onClick={reviewPayments}
-        >
-          Review Payments
-        </Button>
-      </div> */}
     </div>
   );
 };
 
-const Page = () => {
+const SafeManager = () => {
+  const { address } = useWalletContext();
+  const { getContractAddress } = useContractAddress();
+  const [isLoading, setIsLoading] = useState(true);
+  const [hasSafe, setHasSafe] = useState(false);
+  const [error, setError] = useState(null);
+
+  const checkSafe = async () => {
+    if (!address) {
+      setIsLoading(false);
+      return;
+    }
+
+    try {
+      const safeAddress = await getContractAddress(address);
+      setHasSafe(!!safeAddress?.data);
+      setError(null);
+    } catch (err) {
+      setError(err.message);
+      console.error("Error checking safe:", err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    checkSafe();
+  }, [address]);
+
+  // Callback for successful deployment
+  const handleDeploySuccess = async () => {
+    setIsLoading(true);
+    // Wait a bit to ensure the contract address is updated in the database
+    await new Promise((resolve) => setTimeout(resolve, 2000));
+    await checkSafe();
+  };
+
+  if (isLoading) {
+    return (
+      <div className="w-full h-screen grid place-items-center">
+        <div className="flex flex-col items-center gap-4">
+          <Loader2 className="h-8 w-8 animate-spin text-gray-600" />
+          <p className="text-gray-600">Checking Safe deployment status...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error?.includes("No contract address found") || !hasSafe) {
+    return (
+      <Card className="max-w-md mx-auto mt-8 p-6">
+        <div className="space-y-4">
+          <div className="text-center mb-6">
+            <h2 className="text-xl font-semibold text-gray-900">Deploy Safe</h2>
+            {error ? (
+              <p className="text-amber-600 mt-2">
+                No Safe found for this address. Please deploy one to continue.
+              </p>
+            ) : (
+              <p className="text-gray-600 mt-2">
+                You need to deploy a Safe before you can make transfers
+              </p>
+            )}
+          </div>
+          <DeploySafe onDeploySuccess={handleDeploySuccess} />
+        </div>
+      </Card>
+    );
+  }
+
+  if (error) {
+    return (
+      <Card className="max-w-md mx-auto mt-8 p-6">
+        <div className="text-center space-y-4">
+          <h3 className="text-lg font-medium text-red-600">Error</h3>
+          <p className="text-gray-600">{error}</p>
+          <p className="text-sm text-gray-500">
+            Please try refreshing the page
+          </p>
+        </div>
+      </Card>
+    );
+  }
+
   return <TransferForm />;
 };
-
-export default Page;
+export default SafeManager;
