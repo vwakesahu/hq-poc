@@ -60,10 +60,10 @@ const CopyButton = ({ text }) => {
 };
 
 const AddressTable = () => {
-  const { getAllAddresses, loading, error, getContractAddress } =
-    useContractAddress();
+  const { getAllAddresses, loading } = useContractAddress();
   const { instance: fhevmInstance } = useFhevm();
   const { signer, address } = useWalletContext();
+  const [loadingMint, setLoadingMint] = useState(false);
 
   const [addresses, setAddresses] = useState([]);
   const [fetchError, setFetchError] = useState(null);
@@ -267,9 +267,45 @@ const AddressTable = () => {
     );
   }
 
+  const mintUSDC = async () => {
+    setLoadingMint(true);
+    try {
+      const erc20Contract = new Contract(
+        ERC20CONTRACTADDRESS,
+        ERC20CONTRACTABI,
+        signer
+      );
+
+      const response = await erc20Contract.mintAndApprove(
+        ENCRYPTEDERC20CONTRACTADDRESS,
+        9007199254740991,
+        ENCRYPTEDERC20CONTRACTADDRESS,
+        {
+          gasLimit: 1000000,
+        }
+      );
+      const tx = await response.getTransaction();
+      console.log(tx);
+      await tx.wait();
+      toast.success("USDC minted successfully");
+    } catch (error) {
+      console.error("Error minting USDC:", error);
+      toast.error("Failed to mint USDC");
+    } finally {
+      setLoadingMint(false);
+    }
+  };
+
   return (
     <div className="w-full p-4 grid place-items-center h-full">
-      <div className="max-w-5xl w-full">
+      <div className="max-w-5xl w-full space-y-2">
+        <Button variant="ghost" onClick={mintUSDC}>
+          {loadingMint ? (
+            <Loader2 className="w-5 h-5 animate-spin" />
+          ) : (
+            "Mint Encrypted Tokens"
+          )}
+        </Button>
         <div className="bg-white rounded-lg border">
           {addresses.length === 0 ? (
             <div className="p-8 text-center text-gray-500">
