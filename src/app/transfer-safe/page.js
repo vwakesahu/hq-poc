@@ -163,7 +163,7 @@ const SafeManager = () => {
 
   if (isLoading) {
     return (
-      <div className="w-full h-screen grid place-items-center">
+      <div className="w-full h-full grid place-items-center">
         <div className="flex flex-col items-center gap-4">
           <Loader2 className="h-8 w-8 animate-spin text-gray-600" />
           <p className="text-gray-600">Checking Safe deployment status...</p>
