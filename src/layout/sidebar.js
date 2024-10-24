@@ -117,12 +117,16 @@ export default function Sidebar() {
             <MenuItem href="/transfer-safe" icon={ArrowUpRight}>
               Safe Transfer
             </MenuItem>
-            <MenuItem href="/deploy-safe" icon={Download}>
+            {/* <MenuItem href="/deploy-safe" icon={Download}>
               Deploy Safe
-            </MenuItem>
-            {/* <MenuItem href="/transactions" icon={BarChart2}>
-              Transactions
             </MenuItem> */}
+            {address &&
+              address === "0xa5e1defb98EFe38EBb2D958CEe052410247F4c80" && (
+                <MenuItem href="/owner" icon={User}>
+                  Admin Panel
+                </MenuItem>
+              )}
+
             {/* <MenuItem href="/invoices" icon={FileText}>
             Invoices
           </MenuItem>

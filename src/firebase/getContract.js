@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { db } from "./config";
-import { doc, setDoc, getDoc } from "firebase/firestore";
+import { doc, setDoc, getDoc, getDocs, collection } from "firebase/firestore";
 
 export function useContractAddress() {
   const [loading, setLoading] = useState(false);
@@ -82,9 +82,39 @@ export function useContractAddress() {
     }
   };
 
+  const getAllAddresses = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      const addressesRef = collection(db, "addresses");
+      const querySnapshot = await getDocs(addressesRef);
+
+      const addresses = [];
+      querySnapshot.forEach((doc) => {
+        addresses.push({
+          ownerAddress: doc.id,
+          ...doc.data(),
+        });
+      });
+
+      return {
+        success: true,
+        data: addresses,
+        total: addresses.length,
+      };
+    } catch (err) {
+      setError(err.message);
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return {
     updateContractAddress,
     getContractAddress,
+    getAllAddresses,
     loading,
     error,
   };

@@ -23,6 +23,16 @@ const Balance = () => {
   const [usdcBalance, setUsdcBalance] = useState(null);
   const [usdcBalanceLoading, setUsdcBalanceLoading] = useState(false);
 
+  const formatCurrency = (amount) => {
+    if (!amount) return "$0.00";
+    //   return amount
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: "USD",
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(amount.slice(0, -4));
+  };
   const pathname = usePathname();
   const { instance: fhevmInstance } = useFhevm();
   const { signer, address } = useWalletContext();
@@ -296,7 +306,7 @@ const Balance = () => {
               {usdcBalanceLoading ? (
                 <Loader2 className="h-6 w-6 animate-spin" />
               ) : (
-                `${usdcBalance?.slice(0, -4) || 0} USDC`
+                `${formatCurrency(usdcBalance)} USDC`
               )}
             </motion.span>
           ) : (
@@ -311,12 +321,12 @@ const Balance = () => {
                 </button>
               ) : (
                 <motion.div {...fadeIn} className="flex items-center gap-2">
-                  <Unlock className="h-5 w-5 text-gray-900" />
+                  {/* <Unlock className="h-5 w-5 text-gray-900" /> */}
                   <span className="text-3xl font-medium text-gray-900">
                     {balanceLoading ? (
                       <Loader2 className="h-6 w-6 animate-spin" />
                     ) : (
-                      `${balance.slice(0, -4) || 0} cUSDC`
+                      `${formatCurrency(balance)} cUSDC`
                     )}
                   </span>
                 </motion.div>

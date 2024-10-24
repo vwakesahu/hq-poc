@@ -18,7 +18,7 @@ import {
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Contract } from "ethers";
+import { Contract, ethers } from "ethers";
 import { AbiCoder } from "ethers";
 import { useWalletContext } from "@/privy/walletContext";
 import { useFhevm } from "@/fhevm/fhevm-context";
@@ -36,6 +36,7 @@ import {
   safeApproveHash,
 } from "@/utils/buildSafeTx";
 import { SAFEABI } from "@/utils/safeContract";
+import { toast } from "sonner";
 
 const SafeDistribute = () => {
   const { signer, address } = useWalletContext();
@@ -109,51 +110,93 @@ const SafeDistribute = () => {
     setPayments(updatedPayments);
   };
 
+  const allowance = async () => {
+    try {
+      let fnSelector = "0x095ea7b3";
+
+      const safeAddress = await getContractAddress(address);
+      if (!safeAddress.data) {
+        console.error("No Safe contract address found");
+        return;
+      }
+
+      const safecontractAddress = safeAddress.data.contractAddress;
+
+      const contractOwnerSafe = new Contract(
+        safecontractAddress,
+        SAFEABI,
+        signer
+      );
+
+      const erc20Contract = new Contract(
+        ERC20CONTRACTADDRESS,
+        ERC20CONTRACTABI,
+        signer
+      );
+      const balance = await erc20Contract.balanceOf(safecontractAddress);
+      console.log(balance.toString());
+
+      const txn1 = {
+        to: ERC20CONTRACTADDRESS,
+        value: 0,
+        data:
+          fnSelector +
+          AbiCoder.defaultAbiCoder()
+            .encode(
+              ["address", "uint256"],
+              [ENCRYPTEDERC20CONTRACTADDRESS, balance] //take input
+            )
+            .slice(2),
+        operation: 0,
+        safeTxGas: 1000000,
+        baseGas: 0,
+        gasPrice: 1000000,
+        gasToken: safecontractAddress,
+        refundReceiver: address,
+        nonce: await contractOwnerSafe.nonce(),
+      };
+
+      const tx = buildSafeTransaction(txn1);
+      const signatureBytes = buildSignatureBytes([
+        await safeApproveHash(signer, contractOwnerSafe, tx, true),
+      ]);
+
+      const response = await contractOwnerSafe.execTransaction(
+        ERC20CONTRACTADDRESS,
+        0,
+        fnSelector +
+          AbiCoder.defaultAbiCoder()
+            .encode(
+              ["address", "uint256"],
+              [ENCRYPTEDERC20CONTRACTADDRESS, balance] //take input
+            )
+            .slice(2),
+        0,
+        1000000,
+        0,
+        1000000,
+        safecontractAddress,
+        address,
+        signatureBytes,
+        { gasLimit: 10000000 }
+      );
+      const txn = await response.getTransaction();
+      await txn.wait(1);
+      console.log("Approval to EncryptedERC20 successful!");
+      toast.success("Approval to EncryptedERC20 successful!");
+    } catch (error) {
+      console.error("Approval to EncryptedERC20 failed:", error);
+    }
+  };
+
   const handleDistribute = async () => {
     setIsProcessing(true);
     setError(null);
 
+    await allowance();
+
     try {
-      const encryptedERC20Contract = new Contract(
-        ENCRYPTEDERC20CONTRACTADDRESS,
-        ENCRYPTEDERC20CONTRACTABI,
-        signer
-      );
-
-      let finalData = [];
-      let amount = 0;
-
-      for (let i = 0; i < payments.length; i++) {
-        const input = await fhevmInstance.createEncryptedInput(
-          ENCRYPTEDERC20CONTRACTADDRESS,
-          address
-        );
-        amount = amount + Number(payments[i].amount);
-
-        await input.add64(Number(payments[i].amount));
-        const encryptedInput = await input.encrypt();
-        const data1 = [
-          payments[i].safeContractAddress,
-          encryptedInput.handles[0],
-          "0x" + toHexString(encryptedInput.inputProof),
-        ];
-        finalData.push(data1);
-      }
-
-      const abiCoder = AbiCoder.defaultAbiCoder();
-      const encodedData1 = abiCoder.encode(
-        ["tuple(address,bytes32,bytes)[]"],
-        [finalData]
-      );
-
-      const response = await encryptedERC20Contract.wrapAndDistribute(
-        amount,
-        encodedData1,
-        { gasLimit: 7000000 }
-      );
-
-      const tx = await response.getTransaction();
-      await tx.wait();
+      await distribute();
     } catch (err) {
       console.error(err);
       setError(err.message || "Failed to process distribution");
@@ -162,7 +205,7 @@ const SafeDistribute = () => {
     }
   };
 
-  const demo = async () => {
+  const distribute = async () => {
     let fnSelector = "0xf98aa085";
 
     let finalData = [];
@@ -175,7 +218,7 @@ const SafeDistribute = () => {
       );
       amount = amount + Number(payments[i].amount);
 
-      await input.add64(Number(payments[i].amount));
+      await input.add64(ethers.parseUnits(payments[i].amount.toString(), 4));
       const encryptedInput = await input.encrypt();
       const data1 = [
         payments[i].safeContractAddress,
@@ -246,6 +289,7 @@ const SafeDistribute = () => {
       const txn = await response.getTransaction();
       console.log("Transaction hash:", txn.hash);
       await txn.wait(1);
+      toast.success("Wrap and distribute to receiver safes successful!");
       console.log("Wrap and distribute to receiver safes successful!");
     } catch (error) {
       console.error("Wrap and distribute to receiver safes failed:", error);
@@ -322,7 +366,6 @@ const SafeDistribute = () => {
 
           {/* Content */}
           <div className="p-6 flex-1 overflow-y-auto max-h-[60vh]">
-            <button onClick={demo}>distribute</button>
             <AnimatePresence mode="popLayout">
               {payments.map((payment, index) => (
                 <motion.div

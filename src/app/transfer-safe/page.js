@@ -1,6 +1,14 @@
 "use client";
 import React, { useState } from "react";
-import { Loader, Plus, RefreshCcw, Trash2, Wallet } from "lucide-react";
+import {
+  Gift,
+  Loader,
+  Loader2,
+  Plus,
+  RefreshCcw,
+  Trash2,
+  Wallet,
+} from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -23,10 +31,13 @@ import {
   buildSignatureBytes,
   safeApproveHash,
 } from "@/utils/buildSafeTx";
+import Balance from "@/components/balance";
+import { toast } from "sonner";
 
 const TransferForm = () => {
   const { signer, w0, address, isLoading, error } = useWalletContext();
   const { getContractAddress } = useContractAddress();
+  const [claimLoading, setClaimLoading] = useState(false);
   const { instance: fhevmInstance } = useFhevm();
   const [payments, setPayments] = useState([
     {
@@ -72,11 +83,6 @@ const TransferForm = () => {
 
   const reviewPayments = async () => {
     console.log("Form values:", payments);
-    const encryptedERC20Contract = new Contract(
-      ENCRYPTEDERC20CONTRACTADDRESS,
-      ENCRYPTEDERC20CONTRACTABI,
-      signer
-    );
 
     try {
       for (let i = 0; i < payments.length; i++) {
@@ -185,19 +191,20 @@ const TransferForm = () => {
   };
 
   const claimPayments = async () => {
-    const safeAddress = await getContractAddress(address);
-    if (!safeAddress.data) {
-      console.error("No Safe contract address found");
-      return;
-    }
-    const safecontractAddress = safeAddress.data.contractAddress;
-    const contractOwnerSafe = new Contract(
-      safecontractAddress,
-      SAFEABI,
-      signer
-    );
+    setClaimLoading(true);
 
     try {
+      const safeAddress = await getContractAddress(address);
+      if (!safeAddress.data) {
+        console.error("No Safe contract address found");
+        return;
+      }
+      const safecontractAddress = safeAddress.data.contractAddress;
+      const contractOwnerSafe = new Contract(
+        safecontractAddress,
+        SAFEABI,
+        signer
+      );
       let claimFnSelector = "0x4e71d92d";
 
       const txn2 = {
@@ -235,16 +242,19 @@ const TransferForm = () => {
       );
       console.log("Transaction hash:", txn.hash);
       await txn.wait(1);
+      toast.success("Claim successful!");
       console.log("Claim by Carol safe successful!");
     } catch (error) {
       console.error("Claim by Carol safe failed:", error);
+    } finally {
+      setClaimLoading(false);
     }
   };
 
   return (
-    <div className="max-w-4xl mx-auto pb-8 flex flex-col h-full">
-      <Button onClick={claimPayments}>Claim</Button>
-      <Card>
+    <div className="max-w-4xl mx-auto p-8 space-y-8 pt-20">
+      <Balance />
+      {/* <Card>
         <CardContent className="p-6">
           <div className="flex w-full justify-between">
             <h2 className="text-lg font-semibold pb-4">
@@ -335,19 +345,49 @@ const TransferForm = () => {
             </div>
           </div>
         </CardContent>
-      </Card>
+      </Card> */}
 
-      <SafeTransferDialouge />
-      <SafeDistribute />
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <SafeTransferDialouge />
+        <SafeDistribute />
+        <Card className="bg-white hover:bg-gray-50 transition-colors cursor-pointer">
+          <CardContent
+            className={`p-6 grid place-items-center ${
+              claimLoading ? "h-full" : ""
+            }`}
+          >
+            <>
+              {claimLoading ? (
+                <div className="w-full h-full grid place-items-center">
+                  <Loader2 className="h-8 w-8 animate-spin" />
+                </div>
+              ) : (
+                <div
+                  className="flex items-center gap-4"
+                  onClick={claimPayments}
+                >
+                  <div className="p-2 rounded-full bg-gray-100">
+                    <Gift className="w-5 h-5 text-gray-600" />
+                  </div>
+                  <div>
+                    <h3 className="font-medium text-gray-900">Claim Token</h3>
+                    <p className="text-sm text-gray-500">Redeem your tokens</p>
+                  </div>
+                </div>
+              )}
+            </>
+          </CardContent>
+        </Card>
+      </div>
 
-      <div className="mt-8 flex justify-end gap-4">
+      {/* <div className="mt-8 flex justify-end gap-4">
         <Button
           className="bg-gray-900 hover:bg-gray-700 text-white px-6"
           onClick={reviewPayments}
         >
           Review Payments
         </Button>
-      </div>
+      </div> */}
     </div>
   );
 };

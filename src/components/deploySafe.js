@@ -4,7 +4,6 @@ import { useWalletContext } from "@/privy/walletContext";
 import React, { useState } from "react";
 import { ethers } from "ethers";
 import { SAFEABI, SAFEBYTECODE } from "@/utils/safeContract";
-import { Input } from "@/components/ui/input";
 import { useContractAddress } from "@/firebase/getContract";
 
 const DeploySafe = () => {
@@ -12,8 +11,7 @@ const DeploySafe = () => {
   const [isDeploying, setIsDeploying] = useState(false);
   const [status, setStatus] = useState("");
   const [contractAddress, setContractAddress] = useState("");
-  const { updateContractAddress, getContractAddress, loading, error } =
-    useContractAddress();
+  const { updateContractAddress } = useContractAddress();
 
   const deployContract = async () => {
     if (!signer || !address) {
