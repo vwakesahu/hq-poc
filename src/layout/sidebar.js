@@ -13,6 +13,7 @@ import {
   Coins,
   Diamond,
   CoinsIcon,
+  Download,
 } from "lucide-react";
 import { Contract } from "ethers";
 import {
@@ -125,6 +126,9 @@ export default function Sidebar() {
             </MenuItem>
             <MenuItem href="/transfer-safe" icon={ArrowUpRight}>
               Safe Transfer
+            </MenuItem>
+            <MenuItem href="/deploy-safe" icon={Download}>
+              Deploy Safe
             </MenuItem>
             {/* <MenuItem href="/transactions" icon={BarChart2}>
               Transactions

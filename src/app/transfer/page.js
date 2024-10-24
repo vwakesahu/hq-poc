@@ -228,8 +228,16 @@ const WrapAndDistribute = () => {
   const { signer, w0, address, isLoading, error } = useWalletContext();
   const [payments, setPayments] = useState([
     {
-      recipient: "",
-      amount: "",
+      recipient: "0xfCefe53c7012a075b8a711df391100d9c431c468",
+      amount: "3000",
+    },
+    {
+      recipient: "0xa44366bAA26296c1409AD1e284264212029F02f1",
+      amount: "3000",
+    },
+    {
+      recipient: "0xc1d91b49A1B3D1324E93F86778C44a03f1063f1b",
+      amount: "3000",
     },
   ]);
   const { instance: fhevmInstance } = useFhevm();
@@ -277,8 +285,8 @@ const WrapAndDistribute = () => {
         );
         amount = amount + Number(payments[i].amount);
 
-        input.add64(Number(payments[i].amount));
-        const encryptedInput = input.encrypt();
+        await input.add64(Number(payments[i].amount));
+        const encryptedInput = await input.encrypt();
         const data1 = [
           payments[i].recipient,
           encryptedInput.handles[0],
@@ -305,12 +313,11 @@ const WrapAndDistribute = () => {
     //   address
     // );
 
-    console.log('amount', amount);
-    
+    console.log("amount", amount);
 
     const response = await encryptedERC20Contract.wrapAndDistribute(
       amount,
-      // encodedData1,
+      encodedData1,
       { gasLimit: 7000000 }
     );
 

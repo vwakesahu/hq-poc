@@ -1,8 +1,8 @@
 export const ENCRYPTEDERC20CONTRACTADDRESS =
-  "0xFc31f2ED810C0EddF0083e93e99Fc303d6d50599";
+  "0x4921f7b5B40fA3D8082Fd55920fD63cc6a40f9e1";
 
 export const ERC20CONTRACTADDRESS =
-  "0x02A2a822287c4d7E4dE92023CBdf24FcD96e1C99";
+  "0x312a8056252f82251aD71FfDe6DF09e49309B8F7";
 
 export const ENCRYPTEDERC20CONTRACTABI = [
   {
@@ -269,6 +269,11 @@ export const ENCRYPTEDERC20CONTRACTABI = [
   {
     inputs: [
       {
+        internalType: "address",
+        name: "userAddress",
+        type: "address",
+      },
+      {
         internalType: "uint64",
         name: "mintedAmount",
         type: "uint64",
@@ -339,7 +344,7 @@ export const ENCRYPTEDERC20CONTRACTABI = [
     name: "originalToken",
     outputs: [
       {
-        internalType: "contract ERC20",
+        internalType: "address",
         name: "",
         type: "address",
       },
@@ -570,9 +575,9 @@ export const ENCRYPTEDERC20CONTRACTABI = [
   {
     inputs: [
       {
-        internalType: "uint64",
+        internalType: "uint256",
         name: "amount",
-        type: "uint64",
+        type: "uint256",
       },
     ],
     name: "wrap",
@@ -602,24 +607,115 @@ export const ENCRYPTEDERC20CONTRACTABI = [
 
 export const ERC20CONTRACTABI = [
   {
+    inputs: [],
+    stateMutability: "nonpayable",
+    type: "constructor",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "spender",
+        type: "address",
+      },
+      {
+        internalType: "uint256",
+        name: "allowance",
+        type: "uint256",
+      },
+      {
+        internalType: "uint256",
+        name: "needed",
+        type: "uint256",
+      },
+    ],
+    name: "ERC20InsufficientAllowance",
+    type: "error",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "sender",
+        type: "address",
+      },
+      {
+        internalType: "uint256",
+        name: "balance",
+        type: "uint256",
+      },
+      {
+        internalType: "uint256",
+        name: "needed",
+        type: "uint256",
+      },
+    ],
+    name: "ERC20InsufficientBalance",
+    type: "error",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "approver",
+        type: "address",
+      },
+    ],
+    name: "ERC20InvalidApprover",
+    type: "error",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "receiver",
+        type: "address",
+      },
+    ],
+    name: "ERC20InvalidReceiver",
+    type: "error",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "sender",
+        type: "address",
+      },
+    ],
+    name: "ERC20InvalidSender",
+    type: "error",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "spender",
+        type: "address",
+      },
+    ],
+    name: "ERC20InvalidSpender",
+    type: "error",
+  },
+  {
     anonymous: false,
     inputs: [
       {
         indexed: true,
         internalType: "address",
-        name: "src",
+        name: "owner",
         type: "address",
       },
       {
         indexed: true,
         internalType: "address",
-        name: "guy",
+        name: "spender",
         type: "address",
       },
       {
         indexed: false,
         internalType: "uint256",
-        name: "wad",
+        name: "value",
         type: "uint256",
       },
     ],
@@ -632,38 +728,19 @@ export const ERC20CONTRACTABI = [
       {
         indexed: true,
         internalType: "address",
-        name: "dst",
-        type: "address",
-      },
-      {
-        indexed: false,
-        internalType: "uint256",
-        name: "wad",
-        type: "uint256",
-      },
-    ],
-    name: "Deposit",
-    type: "event",
-  },
-  {
-    anonymous: false,
-    inputs: [
-      {
-        indexed: true,
-        internalType: "address",
-        name: "src",
+        name: "from",
         type: "address",
       },
       {
         indexed: true,
         internalType: "address",
-        name: "dst",
+        name: "to",
         type: "address",
       },
       {
         indexed: false,
         internalType: "uint256",
-        name: "wad",
+        name: "value",
         type: "uint256",
       },
     ],
@@ -671,34 +748,39 @@ export const ERC20CONTRACTABI = [
     type: "event",
   },
   {
-    anonymous: false,
     inputs: [
       {
-        indexed: true,
         internalType: "address",
-        name: "src",
+        name: "owner",
         type: "address",
       },
       {
-        indexed: false,
+        internalType: "address",
+        name: "spender",
+        type: "address",
+      },
+    ],
+    name: "allowance",
+    outputs: [
+      {
         internalType: "uint256",
-        name: "wad",
+        name: "",
         type: "uint256",
       },
     ],
-    name: "Withdrawal",
-    type: "event",
+    stateMutability: "view",
+    type: "function",
   },
   {
     inputs: [
       {
         internalType: "address",
-        name: "guy",
+        name: "spender",
         type: "address",
       },
       {
         internalType: "uint256",
-        name: "wad",
+        name: "value",
         type: "uint256",
       },
     ],
@@ -717,7 +799,7 @@ export const ERC20CONTRACTABI = [
     inputs: [
       {
         internalType: "address",
-        name: "",
+        name: "account",
         type: "address",
       },
     ],
@@ -733,19 +815,6 @@ export const ERC20CONTRACTABI = [
     type: "function",
   },
   {
-    inputs: [
-      {
-        internalType: "uint256",
-        name: "wad",
-        type: "uint256",
-      },
-    ],
-    name: "burn",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
     inputs: [],
     name: "decimals",
     outputs: [
@@ -753,43 +822,6 @@ export const ERC20CONTRACTABI = [
         internalType: "uint8",
         name: "",
         type: "uint8",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [],
-    name: "getAddress",
-    outputs: [
-      {
-        internalType: "address",
-        name: "",
-        type: "address",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
-        internalType: "address",
-        name: "from",
-        type: "address",
-      },
-      {
-        internalType: "address",
-        name: "to",
-        type: "address",
-      },
-    ],
-    name: "getallowance",
-    outputs: [
-      {
-        internalType: "uint256",
-        name: "",
-        type: "uint256",
       },
     ],
     stateMutability: "view",
@@ -817,13 +849,18 @@ export const ERC20CONTRACTABI = [
     inputs: [
       {
         internalType: "address",
-        name: "cUsdcContractAddress",
+        name: "user",
         type: "address",
       },
       {
         internalType: "uint256",
         name: "amount",
         type: "uint256",
+      },
+      {
+        internalType: "address",
+        name: "spender",
+        type: "address",
       },
     ],
     name: "mintAndApprove",
@@ -874,12 +911,12 @@ export const ERC20CONTRACTABI = [
     inputs: [
       {
         internalType: "address",
-        name: "dst",
+        name: "to",
         type: "address",
       },
       {
         internalType: "uint256",
-        name: "wad",
+        name: "value",
         type: "uint256",
       },
     ],
@@ -898,17 +935,17 @@ export const ERC20CONTRACTABI = [
     inputs: [
       {
         internalType: "address",
-        name: "src",
+        name: "from",
         type: "address",
       },
       {
         internalType: "address",
-        name: "dst",
+        name: "to",
         type: "address",
       },
       {
         internalType: "uint256",
-        name: "wad",
+        name: "value",
         type: "uint256",
       },
     ],

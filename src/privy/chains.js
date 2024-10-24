@@ -1,12 +1,12 @@
 export const chainsName = { inco: "Inco" };
 
 export const incoNetwork = {
-  id: 9000,
-  network: "Evmos",
-  name: "Evmos Testnet",
+  id: 21097,
+  network: "Rivest",
+  name: "Rivest Testnet",
   nativeCurrency: {
-    name: "tEVMOS",
-    symbol: "tEVMOS",
+    name: "INCO",
+    symbol: "INCO",
     decimals: 18,
   },
   rpcUrls: {
