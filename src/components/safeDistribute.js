@@ -216,7 +216,7 @@ const SafeDistribute = () => {
         ENCRYPTEDERC20CONTRACTADDRESS,
         address
       );
-      amount = amount + Number(payments[i].amount);
+      amount = amount + ethers.parseUnits(payments[i].amount.toString(), 4);
 
       await input.add64(ethers.parseUnits(payments[i].amount.toString(), 4));
       const encryptedInput = await input.encrypt();
