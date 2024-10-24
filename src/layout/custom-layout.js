@@ -21,13 +21,13 @@ const CustomLayout = ({ children, linkset = "default" }) => {
     <div className="h-full w-full flex items-center justify-center bg-gray-50">
       <Card className="w-[350px]">
         <CardHeader>
-          <CardTitle>Hey!, Welcome Back,</CardTitle>
+          <CardTitle>Hey!, Welcome to HQ POC,</CardTitle>
           <CardDescription>Connect your wallet to get started</CardDescription>
         </CardHeader>
         <CardContent>
           <Button
             onClick={login}
-            className="w-full bg-blue-500 hover:bg-blue-600"
+            className="w-full"
           >
             Connect Wallet
             <ArrowRight className="ml-2 h-4 w-4" />
